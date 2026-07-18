@@ -37,10 +37,15 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
             // Clean slate detected! Seed interactive onboarding tasks.
             if (!data || data.length === 0) {
+                const { data: sessionData } = await supabase.auth.getSession();
+                const userId = sessionData.session?.user.id;
+                
+                if (!userId) return;
+
                 const onboardingTasks = [
-                    { title: '👋 Welcome to DevForge! Set your primary focus for today', priority: 'high' },
-                    { title: '💻 Log a solved coding problem using the "+ Log" button above', priority: 'medium' },
-                    { title: '⏱️ Try starting a 25-minute Pomodoro study session', priority: 'low' }
+                    { user_id: userId, title: '👋 Welcome to DevForge! Set your primary focus for today', priority: 'high' },
+                    { user_id: userId, title: '💻 Log a solved coding problem using the "+ Log" button above', priority: 'medium' },
+                    { user_id: userId, title: '⏱️ Try starting a 25-minute Pomodoro study session', priority: 'low' }
                 ];
 
                 const { data: seededData, error: seedError } = await supabase
@@ -71,8 +76,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
             }));
 
             set({ tasks: mappedTasks, loading: false });
-        } catch (error) {
-            console.error('Error fetching tasks from Supabase:', error);
+        } catch (error: any) {
+            console.error('Error fetching tasks from Supabase:', error?.message || error);
             set({ loading: false });
         }
     },
@@ -93,9 +98,14 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         set((state) => ({ tasks: [...state.tasks, newTask] }));
 
         try {
+            const { data: sessionData } = await supabase.auth.getSession();
+            const userId = sessionData.session?.user.id;
+            
+            if (!userId) throw new Error('User not authenticated');
+
             const { data, error } = await supabase
                 .from('tasks')
-                .insert([{ title, priority }])
+                .insert([{ user_id: userId, title, priority }])
                 .select();
 
             if (error) throw error;
@@ -110,8 +120,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
                     ),
                 }));
             }
-        } catch (error) {
-            console.error('Failed to save task to Supabase:', error);
+        } catch (error: any) {
+            console.error('Failed to save task to Supabase:', error?.message || error);
             // 3. Revert state on failure
             set((state) => ({ tasks: state.tasks.filter((t) => t.id !== tempId) }));
         }

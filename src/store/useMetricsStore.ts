@@ -113,8 +113,8 @@ export const useMetricsStore = create<MetricsStore>((set, get) => {
                     dailyLogs,
                     loading: false,
                 });
-            } catch (error) {
-                console.error('Error fetching metrics from Supabase:', error);
+            } catch (error: any) {
+                console.error('Error fetching metrics from Supabase:', error?.message || error);
                 set({ loading: false });
             }
         },
