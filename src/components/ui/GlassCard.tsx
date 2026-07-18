@@ -18,12 +18,12 @@ export default function GlassCard({
     onClick
 }: GlassCardProps) {
     const glowClasses = {
-        blue: 'shadow-[0_0_40px_-15px_var(--color-accent-blue)] bg-accent-blue/5',
-        purple: 'shadow-[0_0_40px_-15px_var(--color-accent-purple)] bg-accent-purple/5',
-        green: 'shadow-[0_0_40px_-15px_var(--color-accent-green)] bg-accent-green/5',
-        orange: 'shadow-[0_0_40px_-15px_var(--color-accent-orange)] bg-accent-orange/5',
-        red: 'shadow-[0_0_40px_-15px_var(--color-accent-red)] bg-accent-red/5',
-        gold: 'shadow-[0_0_40px_-15px_var(--color-accent-gold)] bg-accent-gold/5',
+        blue: 'bg-accent-blue/20 blur-2xl',
+        purple: 'bg-accent-purple/20 blur-2xl',
+        green: 'bg-accent-green/20 blur-2xl',
+        orange: 'bg-accent-orange/20 blur-2xl',
+        red: 'bg-accent-red/20 blur-2xl',
+        gold: 'bg-accent-gold/20 blur-2xl',
         none: ''
     };
     // Base wrapper styles for layout & mouse hover states if card is interactive
@@ -58,7 +58,7 @@ export default function GlassCard({
             <div className="relative rounded-[15px] bg-gradient-to-b from-bg-surface to-bg-card p-6 h-full w-full overflow-hidden shadow-luxury">
 
                 {/* 4. Specular Top Highlight (Simulates physical light reflection) */}
-                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
 
                 {/* Card Title Header */}
                 {title && (
