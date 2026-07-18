@@ -42,3 +42,9 @@ next-env.d.ts
 
 # workspace customizations
 .agents/
+
+# local developer logs and specifications
+/Documentation/
+/diary/
+/Notes/
+/notes/
