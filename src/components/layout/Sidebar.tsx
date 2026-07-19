@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { supabase } from '@/lib/supabase';
+import { User } from '@supabase/supabase-js';
 import {
     LayoutDashboard,
     CheckSquare,
@@ -12,17 +15,19 @@ import {
     ChevronDown
 } from "lucide-react";
 import { useMetricsStore } from "@/store/useMetricsStore";
+
 export interface NavItem {
     id: string;
     label: string;
-    icon: typeof LayoutDashboard; // Accepts any Lucide icon component reference
+    icon: typeof LayoutDashboard;
     href: string;
 }
+
 interface SidebarProps {
     activeSection: string;
     onSectionChange: (sectionId: string) => void;
 }
-// Configured list of sidebar navigation options
+
 const navItems: NavItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '#' },
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, href: '#' },
@@ -33,13 +38,33 @@ const navItems: NavItem[] = [
     { id: 'calendar', label: 'Calendar', icon: Calendar, href: '#' },
     { id: 'settings', label: 'Settings', icon: Settings, href: '#' },
 ];
+
 export default function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
     const currentStreak = useMetricsStore((state) => state.getCurrentStreak());
     const [mounted, setMounted] = useState(false);
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
         setMounted(true);
+
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            setUser(user);
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
+
+    const displayName = user?.user_metadata?.full_name ||
+                        user?.user_metadata?.name ||
+                        user?.user_metadata?.preferred_username ||
+                        user?.email?.split('@')[0] ||
+                        'Developer';
+    const avatarUrl = user?.user_metadata?.avatar_url;
+    const initial = displayName.charAt(0).toUpperCase();
 
     return (
         <aside className="w-64 h-screen bg-bg-surface border-r border-border-translucent flex flex-col justify-between p-6 select-none">
@@ -97,26 +122,40 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
                         <div>
                             <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Current Streak</div>
                             <div className="text-sm font-bold text-white">
-                                {mounted ? `${currentStreak} Days` : '23 Days'}
+                                {mounted ? `${currentStreak} Days` : '0 Days'}
                             </div>
                         </div>
                     </div>
                 </div>
                 {/* User Profile Snippet */}
                 <div className="flex items-center justify-between p-2 rounded-xl hover:bg-white/3 cursor-pointer transition-all duration-300 group border border-transparent hover:border-border-translucent">
-                    <div className="flex items-center gap-3">
-                        {/* Styled Initials Avatar */}
-                        <div className="relative w-9 h-9 rounded-full bg-accent-purple/15 border border-accent-purple/25 flex items-center justify-center text-xs font-bold text-accent-purple shadow-[0_0_10px_-3px_var(--color-accent-purple)]">
-                            E
+                    <div className="flex items-center gap-3 min-w-0">
+                        {/* Styled Avatar */}
+                        <div className="relative w-9 h-9 rounded-full bg-accent-purple/15 border border-accent-purple/25 flex items-center justify-center text-xs font-bold text-accent-purple shadow-[0_0_10px_-3px_var(--color-accent-purple)] shrink-0 overflow-hidden">
+                            {avatarUrl ? (
+                                <Image
+                                    src={avatarUrl}
+                                    alt={displayName}
+                                    width={36}
+                                    height={36}
+                                    className="w-full h-full object-cover rounded-full"
+                                />
+                            ) : (
+                                initial
+                            )}
                             {/* Online Green Indicator Dot */}
-                            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-accent-green border-[2px] border-bg-surface" />
+                            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-accent-green border-[2px] border-bg-surface z-10" />
                         </div>
-                        <div>
-                            <div className="text-sm font-semibold text-white group-hover:text-accent-blue transition-colors duration-300">Eragon</div>
-                            <div className="text-[10px] font-medium text-slate-500">View Profile</div>
+                        <div className="truncate">
+                            <div className="text-sm font-semibold text-white group-hover:text-accent-blue transition-colors duration-300 truncate">
+                                {mounted ? displayName : '...'}
+                            </div>
+                            <div className="text-[10px] font-medium text-slate-500 truncate">
+                                {user?.email || 'View Profile'}
+                            </div>
                         </div>
                     </div>
-                    <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-colors duration-300" />
+                    <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-colors duration-300 shrink-0" />
                 </div>
             </div>
         </aside>
