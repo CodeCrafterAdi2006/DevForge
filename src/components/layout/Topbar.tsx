@@ -1,10 +1,36 @@
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Search, Bell, Sun } from "lucide-react";
+import { supabase } from '@/lib/supabase';
+import { User } from '@supabase/supabase-js';
 
 interface TopbarProps {
     onSearchClick: () => void;
 }
 
 export default function Topbar({ onSearchClick }: TopbarProps) {
+    const [user, setUser] = useState<User | null>(null);
+
+    useEffect(() => {
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            setUser(user);
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    const displayName = user?.user_metadata?.full_name ||
+                        user?.user_metadata?.name ||
+                        user?.user_metadata?.preferred_username ||
+                        user?.email?.split('@')[0] ||
+                        'Developer';
+    const avatarUrl = user?.user_metadata?.avatar_url;
+    const initial = displayName.charAt(0).toUpperCase();
+
     return (
         <header className="h-16 border-b border-border-translucent flex items-center justify-between px-8 bg-bg-base/40 backdrop-blur-md relative z-20">
 
@@ -43,8 +69,18 @@ export default function Topbar({ onSearchClick }: TopbarProps) {
                 </button>
 
                 {/* User Mini Avatar Badge */}
-                <div className="w-7 h-7 rounded-full bg-accent-purple/15 border border-accent-purple/25 flex items-center justify-center text-xs font-bold text-accent-purple shadow-[0_0_8px_-3px_var(--color-accent-purple)] select-none">
-                    E
+                <div className="w-7 h-7 rounded-full bg-accent-purple/15 border border-accent-purple/25 flex items-center justify-center text-xs font-bold text-accent-purple shadow-[0_0_8px_-3px_var(--color-accent-purple)] select-none overflow-hidden">
+                    {avatarUrl ? (
+                        <Image
+                            src={avatarUrl}
+                            alt={displayName}
+                            width={28}
+                            height={28}
+                            className="w-full h-full object-cover rounded-full"
+                        />
+                    ) : (
+                        initial
+                    )}
                 </div>
 
             </div>
