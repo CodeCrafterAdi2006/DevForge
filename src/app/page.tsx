@@ -8,6 +8,7 @@ import FocusTimer from '@/components/dashboard/FocusTimer';
 import CommandPalette from '@/components/ui/CommandPalette';
 import { useMetricsStore } from '@/store/useMetricsStore';
 import AuthGate from '@/components/auth/AuthGate';
+import { supabase } from '@/lib/supabase';
 
 
 export default function Home() {
@@ -31,6 +32,28 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const [userName, setUserName] = useState<string>('');
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        const name = user.user_metadata?.full_name ||
+                     user.user_metadata?.name ||
+                     user.user_metadata?.preferred_username ||
+                     user.email?.split('@')[0] ||
+                     'Developer';
+        setUserName(name);
+      }
+    });
+  }, []);
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  };
 
   // Keyboard shortcut listener to toggle command palette
   useEffect(() => {
@@ -59,7 +82,7 @@ export default function Home() {
             {/* Header Greeting Segment */}
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1.5">
-                Good evening, Eragon. 👋
+                {getGreeting()}{mounted && userName ? `, ${userName}` : ''}. 👋
               </h1>
               <p className="text-slate-400 text-xs font-medium">
                 You've made great progress today. <span className="text-accent-blue font-semibold">Keep forging.</span>
