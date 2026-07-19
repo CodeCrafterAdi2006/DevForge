@@ -130,21 +130,23 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
                 {/* User Profile Snippet */}
                 <div className="flex items-center justify-between p-2 rounded-xl hover:bg-white/3 cursor-pointer transition-all duration-300 group border border-transparent hover:border-border-translucent">
                     <div className="flex items-center gap-3 min-w-0">
-                        {/* Styled Avatar */}
-                        <div className="relative w-9 h-9 rounded-full bg-accent-purple/15 border border-accent-purple/25 flex items-center justify-center text-xs font-bold text-accent-purple shadow-[0_0_10px_-3px_var(--color-accent-purple)] shrink-0 overflow-hidden">
-                            {avatarUrl ? (
-                                <Image
-                                    src={avatarUrl}
-                                    alt={displayName}
-                                    width={36}
-                                    height={36}
-                                    className="w-full h-full object-cover rounded-full"
-                                />
-                            ) : (
-                                initial
-                            )}
-                            {/* Online Green Indicator Dot */}
-                            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-accent-green border-[2px] border-bg-surface z-10" />
+                        {/* Styled Avatar Container */}
+                        <div className="relative w-9 h-9 shrink-0">
+                            <div className="w-full h-full rounded-full bg-accent-purple/15 border border-accent-purple/25 flex items-center justify-center text-xs font-bold text-accent-purple shadow-[0_0_10px_-3px_var(--color-accent-purple)] overflow-hidden">
+                                {avatarUrl ? (
+                                    <Image
+                                        src={avatarUrl}
+                                        alt={displayName}
+                                        width={36}
+                                        height={36}
+                                        className="w-full h-full object-cover rounded-full"
+                                    />
+                                ) : (
+                                    initial
+                                )}
+                            </div>
+                            {/* Online Green Status Badge Dot */}
+                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-accent-green border-2 border-bg-surface z-10 shadow-sm" />
                         </div>
                         <div className="truncate">
                             <div className="text-sm font-semibold text-white group-hover:text-accent-blue transition-colors duration-300 truncate">
